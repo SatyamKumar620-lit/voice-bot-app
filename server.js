@@ -10,7 +10,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-const ai = new GoogleGenAI({ apiKey: "AIzaSyD_7Zlg1yiUz586jikW_BTqIZHXwW7jxcM" });
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 
 app.post("/ask", async (req, res) => {
   const { question } = req.body;
