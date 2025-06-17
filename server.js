@@ -1,4 +1,3 @@
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -8,10 +7,14 @@ const { GoogleGenAI } = require("@google/genai");
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve static files (frontend)
 app.use(express.static(path.join(__dirname, "public")));
 
-const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
+// Gemini API setup
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY }); // <-- Use env var instead of hardcoding
 
+// API route for chatbot interaction
 app.post("/ask", async (req, res) => {
   const { question } = req.body;
   console.log("🟡 Question received:", question);
@@ -32,18 +35,21 @@ app.post("/ask", async (req, res) => {
         }
       ]
     });
-  
+
     const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn’t generate a response.";
     console.log("✅ Gemini replied:", text);
     res.json({ answer: text });
-  
+
   } catch (err) {
     console.error("❌ Gemini error:", err.message);
     res.status(500).json({ error: "Gemini API failed" });
   }
-  
-
 });
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`🚀 Voice bot running at http://localhost:${PORT}`));
+// 🔁 Fallback route: serve index.html for all unknown routes
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Voice bot running on port ${PORT}`));
