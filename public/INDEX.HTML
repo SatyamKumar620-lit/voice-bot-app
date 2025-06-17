@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gemini Voice Bot</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    button { padding: 10px 20px; font-size: 18px; margin: 10px; }
+    #response { margin-top: 20px; font-size: 20px; max-width: 600px; margin-left: auto; margin-right: auto; }
+  </style>
+</head>
+<body>
+  <h1>🎙️ Gemini Voice Bot</h1>
+  <button id="startBtn">🎤 Ask</button>
+  <button id="stopBtn">🛑 Stop</button>
+  <div id="response"></div>
+
+  <script>
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const responseDiv = document.getElementById("response");
+
+    const synth = window.speechSynthesis;
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = "en-US";
+
+    startBtn.onclick = () => {
+      recognition.start();
+      responseDiv.innerText = "🎧 Listening...";
+    };
+
+    recognition.onresult = async (event) => {
+      const question = event.results[0][0].transcript;
+      responseDiv.innerText = `🗣️ You asked: "${question}"\n💬 Thinking...`;
+
+      const res = await fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
+
+      const data = await res.json();
+      responseDiv.innerText = data.answer;
+
+      // Speak the answer
+      const utterance = new SpeechSynthesisUtterance(data.answer);
+      synth.speak(utterance);
+    };
+
+    // Stop button functionality
+    stopBtn.onclick = () => {
+      synth.cancel(); // ✅ Stop current speaking
+      responseDiv.innerText += "\n🛑 Speech stopped.";
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+express 
+openai 
+body-parser 
+cors
+@google/genai
